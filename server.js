@@ -1,5 +1,14 @@
 const { v4: uuidv4 } = require('uuid')
 const express = require('express')
+const mongoose = require('mongoose')
+const User = require('./models/User')
+mongoose
+  .connect('mongodb://localhost/lean-coffee-board', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log('Connected'))
+  .catch(error => console.error('Could not connect', error))
 
 const app = express()
 
@@ -23,13 +32,14 @@ let users = []
 
 app.use(express.json()) // add middleware for json data
 
-app.get('/api/users', (req, res) => {
-  res.json(users)
+app.get('/api/users', async (req, res) => {
+  //User.find().then(users => res.json(users))
+  res.json(await User.find()) //Automatische Fehlermeldung
 })
 
-app.get('/api/users/:id', (req, res) => {
+app.get('/api/users/:id', async (req, res) => {
   const { id } = req.params
-  res.json(users.find(user => user.id === id))
+  res.json(await User.findOne({ id: id }))
 })
 
 app.delete('/api/users/:id', (req, res) => {
@@ -40,14 +50,16 @@ app.delete('/api/users/:id', (req, res) => {
   res.json(users)
 })
 
-app.post('/api/users', (req, res) => {
+app.post('/api/users', async (req, res) => {
   //users.push(req.body)
   //res.json(req.body)
   /*users.push({ id: uuidv4(), name: req.body.name })
     res.json(req.body)*/
-  newUser = { ...req.body, id: uuidv4() }
+  /*newUser = { ...req.body, id: uuidv4() }
   users.push(newUser)
   res.json(newUser)
+  */
+  res.json(await User.create(req.body))
 })
 
 app.get('/api/cards', (req, res) => {
